@@ -108,6 +108,8 @@ class BehaviouralPlanner:
             # TODO: INSERT YOUR CODE BETWEEN THE DASHED LINES
             # ------------------------------------------------------------------
             goal_index = self.get_goal_index(waypoints, ego_state, closest_len, closest_index)
+            self._goal_index = goal_index
+            self._goal_state = waypoints[self._goal_index]
             # ------------------------------------------------------------------
 
             # Finally, check the index set between closest_index and goal_index
@@ -118,6 +120,7 @@ class BehaviouralPlanner:
             # ------------------------------------------------------------------
 
             if self._follow_lead_vehicle:
+                print("Following the lead vehicle")
                 _, lead_vehicle_index = get_closest_index(waypoints, self._lead_vehicle_state)
                 self._goal_index = lead_vehicle_index
                 self._goal_state = waypoints[self._goal_index]
@@ -126,12 +129,11 @@ class BehaviouralPlanner:
             # the deceleration state.
             # TODO: INSERT YOUR CODE BETWEEN THE DASHED LINES
             # ------------------------------------------------------------------
-            elif stop_sign_found:
+            if stop_sign_found:
                 self._goal_index = stop_sign_index
                 self._goal_state = waypoints[self._goal_index]
                 self._goal_state[2] = 0
                 self._state = DECELERATE_TO_STOP
-            print("stop_sign_found = %d" % stop_sign_found)
             # ------------------------------------------------------------------
             
             pass
@@ -372,6 +374,7 @@ class BehaviouralPlanner:
         # Check lead car position delta vector relative to heading, as well as
         # distance, to determine if car should be followed.
         # Check to see if lead vehicle is within range, and is ahead of us.
+        self._lead_vehicle_state = lead_car_state
         if not self._follow_lead_vehicle:
             # Compute the angle between the normalized vector between the lead vehicle
             # and ego vehicle position with the ego vehicle's heading vector.
@@ -393,11 +396,10 @@ class BehaviouralPlanner:
                 return
 
             self._follow_lead_vehicle = True
-            self._lead_vehicle_state = lead_car_state
 
         else:
-            lead_car_delta_vector = [lead_car_position[0] - ego_state[0], 
-                                     lead_car_position[1] - ego_state[1]]
+            lead_car_delta_vector = [lead_car_state[0] - ego_state[0], 
+                                     lead_car_state[1] - ego_state[1]]
             lead_car_distance = np.linalg.norm(lead_car_delta_vector)
 
             # Add a 15m buffer to prevent oscillations for the distance check.

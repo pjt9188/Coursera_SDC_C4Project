@@ -222,7 +222,7 @@ class VelocityPlanner:
         # the path up in reverse to ensure we reach zero speed at the required
         # time.
         if brake_distance + decel_distance + stop_line_buffer > path_length:
-            print("short braking length case - revised by juntae")
+            # print("short braking length case - revised by juntae")
             speeds = []
             vf = 0.0
             # The speeds past the stop line buffer should be zero.
@@ -371,7 +371,7 @@ class VelocityPlanner:
         distance_gap = desired_speed * self._time_gap
         
         # <Juntae>
-        print("follow profile - revised by juntae")
+        # print("follow profile - revised by juntae")
         while (ramp_end_index > 0) and (distance < distance_gap):
         # while (ramp_end_index > 0) and (distance > distance_gap):
             distance += np.linalg.norm([path[0][ramp_end_index] - path[0][ramp_end_index-1], 
