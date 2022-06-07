@@ -133,6 +133,7 @@ class VelocityPlanner:
         # If we need to follow the lead vehicle, make sure we decelerate to its
         # speed by the time we reach the time gap point.
         elif follow_lead_vehicle:
+            print("Following Lead Vehicle")
             profile = self.follow_profile(path, start_speed, desired_speed, 
                                           lead_car_state)
 
@@ -200,9 +201,7 @@ class VelocityPlanner:
         #  start_speed to some coasting speed (slow_speed), then brake_distance
         #  goes from slow_speed to 0, both at a constant deceleration.
         decel_distance = calc_distance(start_speed, slow_speed, -self._a_max)
-        print("decel_distacne : {}".format(decel_distance))
         brake_distance = calc_distance(slow_speed, 0, -self._a_max)
-        print("brake_distacne : {}".format(brake_distance))
 
         # compute total path length
         path_length = 0.0
@@ -251,7 +250,6 @@ class VelocityPlanner:
             for i in range(len(speeds)):
                 profile.append([path[0][i], path[1][i], speeds[i]])
             
-            print(speeds)
             
         # Otherwise, we will perform a full trapezoidal profile. The
         # brake_index will be the index of the path at which we start
