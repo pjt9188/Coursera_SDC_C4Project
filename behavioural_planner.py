@@ -26,6 +26,7 @@ class BehaviouralPlanner:
         self._follow_lead_vehicle_lookahead = lead_vehicle_lookahead
         self._state                         = FOLLOW_LANE
         self._follow_lead_vehicle           = False
+        self._lead_vehicle_state            = [0.0, 0.0, 0.0]
         self._goal_state                    = [0.0, 0.0, 0.0]
         self._goal_index                    = 0
         self._stop_count                    = 0
@@ -113,20 +114,26 @@ class BehaviouralPlanner:
             # for stop signs, and compute the goal state accordingly.
             # TODO: INSERT YOUR CODE BETWEEN THE DASHED LINES
             # ------------------------------------------------------------------
-            goal_index, stop_sign_found = self.check_for_stop_signs(waypoints, closest_index, goal_index)
-            self._goal_index = goal_index
-            self._goal_state = waypoints[self._goal_index]
+            stop_sign_index, stop_sign_found = self.check_for_stop_signs(waypoints, closest_index, goal_index)
             # ------------------------------------------------------------------
+
+            if self._follow_lead_vehicle:
+                _, lead_vehicle_index = get_closest_index(waypoints, self._lead_vehicle_state)
+                self._goal_index = lead_vehicle_index
+                self._goal_state = waypoints[self._goal_index]
 
             # If stop sign found, set the goal to zero speed, then transition to 
             # the deceleration state.
             # TODO: INSERT YOUR CODE BETWEEN THE DASHED LINES
             # ------------------------------------------------------------------
-            if stop_sign_found:
+            elif stop_sign_found:
+                self._goal_index = stop_sign_index
+                self._goal_state = waypoints[self._goal_index]
                 self._goal_state[2] = 0
                 self._state = DECELERATE_TO_STOP
             print("stop_sign_found = %d" % stop_sign_found)
             # ------------------------------------------------------------------
+            
             pass
 
         # In this state, check if we have reached a complete stop. Use the
@@ -344,7 +351,7 @@ class BehaviouralPlanner:
                 
     # Checks to see if we need to modify our velocity profile to accomodate the
     # lead vehicle.
-    def check_for_lead_vehicle(self, ego_state, lead_car_position):
+    def check_for_lead_vehicle(self, ego_state, lead_car_state):
         """Checks for lead vehicle within the proximity of the ego car, such
         that the ego car should begin to follow the lead vehicle.
         플래그 없을 때 : self._follow_lead_vehicle_lookahead 안에 있고, 헤딩 주위 +/-45도 범위 내에 있으면 self._follow_lead_vehicle(플래그) True
@@ -356,7 +363,7 @@ class BehaviouralPlanner:
                     ego_x and ego_y     : position (m)
                     ego_yaw             : top-down orientation [-pi to pi]
                     ego_open_loop_speed : open loop speed (m/s)
-            lead_car_position: The [x, y] position of the lead vehicle.
+            lead_car_position: The [x, y, v] position & forward velocity of the lead vehicle.
                 Lengths are in meters, and it is in the global frame.
         sets:
             self._follow_lead_vehicle: Boolean flag on whether the ego vehicle
@@ -368,8 +375,8 @@ class BehaviouralPlanner:
         if not self._follow_lead_vehicle:
             # Compute the angle between the normalized vector between the lead vehicle
             # and ego vehicle position with the ego vehicle's heading vector.
-            lead_car_delta_vector = [lead_car_position[0] - ego_state[0], 
-                                     lead_car_position[1] - ego_state[1]]
+            lead_car_delta_vector = [lead_car_state[0] - ego_state[0], 
+                                     lead_car_state[1] - ego_state[1]]
             lead_car_distance = np.linalg.norm(lead_car_delta_vector)
             # In this case, the car is too far away.   
             if lead_car_distance > self._follow_lead_vehicle_lookahead:
@@ -386,6 +393,7 @@ class BehaviouralPlanner:
                 return
 
             self._follow_lead_vehicle = True
+            self._lead_vehicle_state = lead_car_state
 
         else:
             lead_car_delta_vector = [lead_car_position[0] - ego_state[0], 

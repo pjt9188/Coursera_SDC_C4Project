@@ -737,7 +737,7 @@ def exec_waypoint_nav_demo(args):
 
                 # Check to see if we need to follow the lead vehicle.
                 # 모든 자동차에 대해서 정보를 뽑아오고, 시나리오상 앞에 있는 차는 1대 뿐이므로 그 위치를 계속 추적함
-                bp.check_for_lead_vehicle(ego_state, lead_car_pos[1])
+                bp.check_for_lead_vehicle(ego_state, [lead_car_pos[1][0], lead_car_pos[1][1], lead_car_speed[1]])
 
                 # Compute the goal state set from the behavioural planner's computed goal state.
                 goal_state_set = lp.get_goal_state_set(bp._goal_index, bp._goal_state, waypoints, ego_state)
